@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ye&#39;s Programming Café</title>
+    <description>Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.
+</description>
+    <link>http://yourdomain.com/</link>
+    <atom:link href="http://yourdomain.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sun, 30 Aug 2015 17:04:34 +0930</pubDate>
+    <lastBuildDate>Sun, 30 Aug 2015 17:04:34 +0930</lastBuildDate>
+    <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>Generate a Jekyll Archive Index</title>
+        <description>&lt;p&gt;Jekyll does not provide archive function out of the box.
+There are some solution solve this problem by creating a separate archive page,
+but I really like a archive side bar on the index page (like the one on this site).&lt;/p&gt;
+
+&lt;p&gt;After spend some time on Jekyll’s documentation. 
+I found this is actually pretty easy to achieve by implementing a custom plugin.&lt;/p&gt;
+
+&lt;p&gt;First we need create a ruby file under &lt;code&gt;_plugins&lt;/code&gt; with the following content.
+The name of the file does not matter as long as it suffixes with &lt;code&gt;rb&lt;/code&gt; it will be loaded on Jekyll start up.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;module Jekyll
+
+  module ArchiveIndexFilter
+    def to_archive(input, format) 
+        # posts will be grouped by specified format (eg. month-year)
+        input.group_by{ |a| a.date.strftime(format) }
+    end
+  end
+
+end
+
+Liquid::Template.register_filter(Jekyll::ArchiveIndexFilter)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now we can use the filter we just created. If you like the archive index bar in this site, here is the HTML snippet:&lt;/p&gt;
+
+&lt;p&gt;Hint: &lt;strong&gt;&lt;em&gt;Jekyll needs a restart to load the Ruby code&lt;/em&gt;&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;div class=&quot;panel panel-default&quot;&amp;gt;
+    &amp;lt;div class=&quot;panel-heading&quot;&amp;gt;Archive&amp;lt;/div&amp;gt;
+    &amp;lt;div class=&quot;panel-body&quot;&amp;gt;
+        {% assign archive = site.posts | to_archive:&#39;%b %Y&#39; %}
+
+        &amp;lt;ul class=&quot;nav&quot;&amp;gt;
+            {% for archive_entry in archive %}
+            &amp;lt;li class=&quot;archive-entry&quot;&amp;gt;
+                &amp;lt;a href=&quot;javascript:void(0)&quot;&amp;gt;{{ archive_entry[0] }} &amp;lt;span class=&quot;badge pull-right&quot;&amp;gt;{{ archive_entry[1] | size }}&amp;lt;/span&amp;gt;&amp;lt;/a&amp;gt;
+                &amp;lt;ul&amp;gt;
+                    {% for post in archive_entry[1] %}
+                    &amp;lt;li&amp;gt;&amp;lt;a href=&quot;{{ post.url }}&quot;&amp;gt;{{ post.title }}&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;
+                    {% endfor %}
+                &amp;lt;/ul&amp;gt;
+            &amp;lt;/li&amp;gt;
+            {% endfor %}
+        &amp;lt;/ul&amp;gt;
+    &amp;lt;/div&amp;gt;
+&amp;lt;/div&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+</description>
+        <pubDate>Mon, 31 Aug 2015 01:24:53 +0930</pubDate>
+        <link>http://yourdomain.com/jekyll/2015/08/31/Jekyll-Archive.html</link>
+        <guid isPermaLink="true">http://yourdomain.com/jekyll/2015/08/31/Jekyll-Archive.html</guid>
+        
+        
+        <category>jekyll</category>
+        
+      </item>
+    
+  </channel>
+</rss>
