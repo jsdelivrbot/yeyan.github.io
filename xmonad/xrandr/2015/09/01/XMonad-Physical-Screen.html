@@ -68,40 +68,37 @@
         <p>When use xmonad with multi monitors. We can spawn a xrandr process during xmonad startup to configure the monitors.</p>
 
 <p><strong><em>Hint:</em></strong> You may use arandr to generate xrandr options</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="c1">-- Setup physical monitors</span>
+<span class="nf">setupMonitors</span> <span class="ow">=</span> <span class="kr">do</span>
+    <span class="n">count</span> <span class="ow">&lt;-</span> <span class="n">countMonitors</span> 
+    <span class="c1">-- only applies when external monitors are available</span>
+    <span class="n">when</span> <span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="o">$</span>
+        <span class="n">spawn</span> <span class="o">$</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">intersperse</span> <span class="s">&quot; &quot;</span>
+            <span class="p">[</span> <span class="s">&quot;xrandr&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output HDMI1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--mode 1920x1080&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--pos 0x0&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--rotate normal&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output LVDS1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--off&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output VIRTUAL1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--off &quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output DP1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--off &quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output VGA1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--mode 1920x1080&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--pos 1920x0&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--rotate normal&quot;</span>
+            <span class="p">]</span>
 
-<pre><code>-- Setup physical monitors
-setupMonitors = do
-    count &lt;- countMonitors 
-    -- only applies when external monitors are available
-    when (count == 3) $
-        spawn $ concat $ intersperse " "
-            [ "xrandr"
-            , "--output HDMI1"
-            , "--mode 1920x1080"
-            , "--pos 0x0"
-            , "--rotate normal"
-            , "--output LVDS1"
-            , "--off"
-            , "--output VIRTUAL1"
-            , "--off "
-            , "--output DP1"
-            , "--off "
-            , "--output VGA1"
-            , "--mode 1920x1080"
-            , "--pos 1920x0"
-            , "--rotate normal"
-            ]
-
--- count physical monitors by count how my lines of "connected" in xrandr's output
-countMonitors = do
-    (_, Just hout, _, _) &lt;-
-        createProcess (proc "xrandr" ["-q"]) 
-            { env = Just [("DISPLAY", ":0")]
-            , std_out = CreatePipe }
-    length . filter (isInfixOf " connected") . lines &lt;$&gt; hGetContents hout
-</code></pre>
-
-
+<span class="c1">-- count physical monitors by count how my lines of &quot;connected&quot; in xrandr standard output</span>
+<span class="nf">countMonitors</span> <span class="ow">=</span> <span class="kr">do</span>
+    <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="kt">Just</span> <span class="n">hout</span><span class="p">,</span> <span class="kr">_</span><span class="p">,</span> <span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span>
+        <span class="n">createProcess</span> <span class="p">(</span><span class="n">proc</span> <span class="s">&quot;xrandr&quot;</span> <span class="p">[</span><span class="s">&quot;-q&quot;</span><span class="p">])</span> 
+            <span class="p">{</span> <span class="n">env</span> <span class="ow">=</span> <span class="kt">Just</span> <span class="p">[(</span><span class="s">&quot;DISPLAY&quot;</span><span class="p">,</span> <span class="s">&quot;:0&quot;</span><span class="p">)]</span>
+            <span class="p">,</span> <span class="n">std_out</span> <span class="ow">=</span> <span class="kt">CreatePipe</span> <span class="p">}</span>
+    <span class="n">length</span> <span class="o">.</span> <span class="n">filter</span> <span class="p">(</span><span class="n">isInfixOf</span> <span class="s">&quot; connected&quot;</span><span class="p">)</span> <span class="o">.</span> <span class="n">lines</span> <span class="o">&lt;$&gt;</span> <span class="n">hGetContents</span> <span class="n">hout</span>
+</code></pre></div>
     </article>
 </div>
 

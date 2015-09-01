@@ -69,13 +69,12 @@
 There are some solution solve this problem by creating a separate archive page,
 but I really like a archive side bar on the index page (like the one on this site).</p>
 
-<p>After spend some time on Jekyll’s documentation. 
-I found this is actually pretty easy to achieve by implementing a custom plugin.</p>
+<p>After spend some time on Jekyll&#39;s documentation. 
+I found this is actually pretty easy to achieve by implementing a custom plugin. </p>
 
 <p>First we need create a ruby file under <code>_plugins</code> with the following content.
 The name of the file does not matter as long as it suffixes with <code>rb</code> it will be loaded on Jekyll start up.</p>
-
-<pre><code>module Jekyll
+<div class="highlight"><pre><code class="language-text" data-lang="text">module Jekyll
 
   module ArchiveIndexFilter
     def to_archive(input, format) 
@@ -87,24 +86,22 @@ The name of the file does not matter as long as it suffixes with <code>rb</code>
 end
 
 Liquid::Template.register_filter(Jekyll::ArchiveIndexFilter)
-</code></pre>
-
+</code></pre></div>
 <p>Now we can use the filter we just created. If you like the archive index bar in this site, here is the HTML snippet:</p>
 
 <p>Hint: <strong><em>Jekyll needs a restart to load the Ruby code</em></strong></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">&lt;div class=&quot;panel panel-default&quot;&gt;
+    &lt;div class=&quot;panel-heading&quot;&gt;Archive&lt;/div&gt;
+    &lt;div class=&quot;panel-body&quot;&gt;
+        {% assign archive = site.posts | to_archive:&#39;%b %Y&#39; %}
 
-<pre><code>&lt;div class="panel panel-default"&gt;
-    &lt;div class="panel-heading"&gt;Archive&lt;/div&gt;
-    &lt;div class="panel-body"&gt;
-        {% assign archive = site.posts | to_archive:'%b %Y' %}
-
-        &lt;ul class="nav"&gt;
+        &lt;ul class=&quot;nav&quot;&gt;
             {% for archive_entry in archive %}
-            &lt;li class="archive-entry"&gt;
-                &lt;a href="javascript:void(0)"&gt;{{ archive_entry[0] }} &lt;span class="badge pull-right"&gt;{{ archive_entry[1] | size }}&lt;/span&gt;&lt;/a&gt;
+            &lt;li class=&quot;archive-entry&quot;&gt;
+                &lt;a href=&quot;javascript:void(0)&quot;&gt;{{ archive_entry[0] }} &lt;span class=&quot;badge pull-right&quot;&gt;{{ archive_entry[1] | size }}&lt;/span&gt;&lt;/a&gt;
                 &lt;ul&gt;
                     {% for post in archive_entry[1] %}
-                    &lt;li&gt;&lt;a href="{{ post.url }}"&gt;{{ post.title }}&lt;/a&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;a href=&quot;{{ post.url }}&quot;&gt;{{ post.title }}&lt;/a&gt;&lt;/li&gt;
                     {% endfor %}
                 &lt;/ul&gt;
             &lt;/li&gt;
@@ -112,9 +109,7 @@ Liquid::Template.register_filter(Jekyll::ArchiveIndexFilter)
         &lt;/ul&gt;
     &lt;/div&gt;
 &lt;/div&gt;
-</code></pre>
-
-
+</code></pre></div>
     </article>
 </div>
 
