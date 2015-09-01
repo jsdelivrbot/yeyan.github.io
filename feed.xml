@@ -6,9 +6,59 @@
 </description>
     <link>http://yourdomain.com/</link>
     <atom:link href="http://yourdomain.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 30 Aug 2015 17:04:34 +0930</pubDate>
-    <lastBuildDate>Sun, 30 Aug 2015 17:04:34 +0930</lastBuildDate>
+    <pubDate>Tue, 01 Sep 2015 20:03:24 +0930</pubDate>
+    <lastBuildDate>Tue, 01 Sep 2015 20:03:24 +0930</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>XMonad Physical Screen Setup</title>
+        <description>&lt;p&gt;When use xmonad with multi monitors. We can spawn a xrandr process during xmonad startup to configure the monitors.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;em&gt;Hint&lt;/em&gt;&lt;/strong&gt; You may use arandr to generate xrandr options&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;-- Setup physical monitors
+setupMonitors = do
+    count &amp;lt;- countMonitors 
+    -- only applies when external monitors are available
+    when (count == 3) $
+        spawn $ concat $ intersperse &quot; &quot;
+            [ &quot;xrandr&quot;
+            , &quot;--output HDMI1&quot;
+            , &quot;--mode 1920x1080&quot;
+            , &quot;--pos 0x0&quot;
+            , &quot;--rotate normal&quot;
+            , &quot;--output LVDS1&quot;
+            , &quot;--off&quot;
+            , &quot;--output VIRTUAL1&quot;
+            , &quot;--off &quot;
+            , &quot;--output DP1&quot;
+            , &quot;--off &quot;
+            , &quot;--output VGA1&quot;
+            , &quot;--mode 1920x1080&quot;
+            , &quot;--pos 1920x0&quot;
+            , &quot;--rotate normal&quot;
+            ]
+
+-- count physical monitors by count how my lines of &quot;connected&quot; in xrandr&#39;s output
+countMonitors = do
+    (_, Just hout, _, _) &amp;lt;-
+        createProcess (proc &quot;xrandr&quot; [&quot;-q&quot;]) 
+            { env = Just [(&quot;DISPLAY&quot;, &quot;:0&quot;)]
+            , std_out = CreatePipe }
+    length . filter (isInfixOf &quot; connected&quot;) . lines &amp;lt;$&amp;gt; hGetContents hout
+&lt;/code&gt;&lt;/pre&gt;
+
+</description>
+        <pubDate>Tue, 01 Sep 2015 19:55:51 +0930</pubDate>
+        <link>http://yourdomain.com/xmonad/xrandr/2015/09/01/XMonad-Physical-Screen.html</link>
+        <guid isPermaLink="true">http://yourdomain.com/xmonad/xrandr/2015/09/01/XMonad-Physical-Screen.html</guid>
+        
+        
+        <category>xmonad</category>
+        
+        <category>xrandr</category>
+        
+      </item>
     
       <item>
         <title>Generate a Jekyll Archive Index</title>
