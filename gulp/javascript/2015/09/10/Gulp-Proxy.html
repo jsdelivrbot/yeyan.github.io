@@ -6,11 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Generate a Jekyll Archive Index</title>
-    <meta name="description" content="Jekyll does not provide archive function out of the box.There are some solution solve this problem by creating a separate archive page,but I really like a ar...">
+    <title>Gulp Proxy Setup</title>
+    <meta name="description" content="Theoretically web browser should allow cross-origin resource sharing (CORS), if Access-Control-Allow-Origin header is presented on web server&#39;s response ...">
 
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="canonical" href="http://yourdomain.com/jekyll/2015/08/31/Jekyll-Archive.html">
+    <link rel="canonical" href="http://yourdomain.com/gulp/javascript/2015/09/10/Gulp-Proxy.html">
     <link rel="alternate" type="application/rss+xml" title="Ye's Programming Café" href="http://yourdomain.com/feed.xml" />
 
     <script src="/js/vendor.js"></script>
@@ -60,55 +60,44 @@
             <div class="site-content col-md-9">
                 <div>
     <header class="page-header">
-        <h1 class="post-title">Generate a Jekyll Archive Index</h1>
+        <h1 class="post-title">Gulp Proxy Setup</h1>
     </header>
-    <p class="text-muted">Aug 31, 2015</p>
+    <p class="text-muted">Sep 10, 2015</p>
 
     <article>
-        <p>Jekyll does not provide archive function out of the box.
-There are some solution solve this problem by creating a separate archive page,
-but I really like a archive side bar on the index page (like the one on this site).</p>
+        <p>Theoretically web browser should allow cross-origin resource sharing (CORS), 
+if Access-Control-Allow-Origin header is presented on web server&#39;s response headers. 
+The problem is not every browser honor this setting.
+At least Google Chrome 44.0.2403.107 under Linux does not response to HTTP header &#39;Access-Control-Allow-Origin: *&#39; at all.</p>
 
-<p>After spend some time on Jekyll&#39;s documentation. 
-I found this is actually pretty easy to achieve by implementing a custom plugin. </p>
+<p>The best solution would be embed a proxy on web server. 
+Delegate all cross domain resources through a specific endpoint (e.g. /proxy).
+With Gulp we can easily setup an dummy server with proxy support and benefits from the live-reload.</p>
 
-<p>First we need create a ruby file under <code>_plugins</code> with the following content.
-The name of the file does not matter as long as it suffixes with <code>rb</code> it will be loaded on Jekyll start up.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">module Jekyll
+<p>Here is an example of proxy through Alfresco&#39;s RESTful API.</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">gulp</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp&#39;</span><span class="p">),</span>
+<span class="kd">var</span> <span class="nx">url</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;url&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">connect</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;gulp-connect&#39;</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">proxy</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;proxy-middleware&#39;</span><span class="p">);</span>
 
-  module ArchiveIndexFilter
-    def to_archive(input, format) 
-        # posts will be grouped by specified format (eg. month-year)
-        input.group_by{ |a| a.date.strftime(format) }
-    end
-  end
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;connect&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">connect</span><span class="p">.</span><span class="nx">server</span><span class="p">();</span>
 
-end
+    <span class="c1">// Assume Alfresco runs on local host</span>
+    <span class="kd">var</span> <span class="nx">proxyOptions</span> <span class="o">=</span> <span class="nx">url</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="s1">&#39;http://localhost:8080/alfresco/service/&#39;</span><span class="p">);</span>
+    <span class="nx">proxyOptions</span><span class="p">.</span><span class="nx">route</span> <span class="o">=</span> <span class="s1">&#39;/api&#39;</span><span class="p">;</span>
 
-Liquid::Template.register_filter(Jekyll::ArchiveIndexFilter)
-</code></pre></div>
-<p>Now we can use the filter we just created. If you like the archive index bar in this site, here is the HTML snippet:</p>
+    <span class="nx">connect</span><span class="p">.</span><span class="nx">server</span><span class="p">({</span>
+        <span class="nx">root</span><span class="o">:</span> <span class="s1">&#39;public&#39;</span><span class="p">,</span>
+        <span class="nx">port</span><span class="o">:</span> <span class="mi">8000</span><span class="p">,</span>
+        <span class="nx">middleware</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">connect</span><span class="p">,</span> <span class="nx">opt</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nx">proxy</span><span class="p">(</span><span class="nx">proxyOptions</span><span class="p">)];</span>
+        <span class="p">},</span>
+        <span class="nx">livereload</span><span class="o">:</span> <span class="kc">true</span>
+    <span class="p">});</span>
+<span class="p">});</span>
 
-<p>Hint: <strong><em>Jekyll needs a restart to load the Ruby code</em></strong></p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">&lt;div class=&quot;panel panel-default&quot;&gt;
-    &lt;div class=&quot;panel-heading&quot;&gt;Archive&lt;/div&gt;
-    &lt;div class=&quot;panel-body&quot;&gt;
-        {% assign archive = site.posts | to_archive:&#39;%b %Y&#39; %}
-
-        &lt;ul class=&quot;nav&quot;&gt;
-            {% for archive_entry in archive %}
-            &lt;li class=&quot;archive-entry&quot;&gt;
-                &lt;a href=&quot;javascript:void(0)&quot;&gt;{{ archive_entry[0] }} &lt;span class=&quot;badge pull-right&quot;&gt;{{ archive_entry[1] | size }}&lt;/span&gt;&lt;/a&gt;
-                &lt;ul&gt;
-                    {% for post in archive_entry[1] %}
-                    &lt;li&gt;&lt;a href=&quot;{{ post.url }}&quot;&gt;{{ post.title }}&lt;/a&gt;&lt;/li&gt;
-                    {% endfor %}
-                &lt;/ul&gt;
-            &lt;/li&gt;
-            {% endfor %}
-        &lt;/ul&gt;
-    &lt;/div&gt;
-&lt;/div&gt;
+<span class="nx">gulp</span><span class="p">.</span><span class="nx">task</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;connect&#39;</span><span class="p">]);</span>
 </code></pre></div>
     </article>
 </div>

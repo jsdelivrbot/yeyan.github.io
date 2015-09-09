@@ -6,11 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Generate a Jekyll Archive Index</title>
-    <meta name="description" content="Jekyll does not provide archive function out of the box.There are some solution solve this problem by creating a separate archive page,but I really like a ar...">
+    <title>XMonad Physical Screen Setup</title>
+    <meta name="description" content="When use xmonad with multi monitors. We can spawn a xrandr process during xmonad startup to configure the monitors.">
 
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="canonical" href="http://yourdomain.com/jekyll/2015/08/31/Jekyll-Archive.html">
+    <link rel="canonical" href="http://yourdomain.com/xmonad/xrandr/2015/09/01/XMonad-Physical-Screen.html">
     <link rel="alternate" type="application/rss+xml" title="Ye's Programming Café" href="http://yourdomain.com/feed.xml" />
 
     <script src="/js/vendor.js"></script>
@@ -60,55 +60,44 @@
             <div class="site-content col-md-9">
                 <div>
     <header class="page-header">
-        <h1 class="post-title">Generate a Jekyll Archive Index</h1>
+        <h1 class="post-title">XMonad Physical Screen Setup</h1>
     </header>
-    <p class="text-muted">Aug 31, 2015</p>
+    <p class="text-muted">Sep 1, 2015</p>
 
     <article>
-        <p>Jekyll does not provide archive function out of the box.
-There are some solution solve this problem by creating a separate archive page,
-but I really like a archive side bar on the index page (like the one on this site).</p>
+        <p>When use xmonad with multi monitors. We can spawn a xrandr process during xmonad startup to configure the monitors.</p>
 
-<p>After spend some time on Jekyll&#39;s documentation. 
-I found this is actually pretty easy to achieve by implementing a custom plugin. </p>
+<p><strong><em>Hint:</em></strong> You may use arandr to generate xrandr options</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="c1">-- Setup physical monitors</span>
+<span class="nf">setupMonitors</span> <span class="ow">=</span> <span class="kr">do</span>
+    <span class="n">count</span> <span class="ow">&lt;-</span> <span class="n">countMonitors</span> 
+    <span class="c1">-- only applies when external monitors are available</span>
+    <span class="n">when</span> <span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span> <span class="o">$</span>
+        <span class="n">spawn</span> <span class="o">$</span> <span class="n">concat</span> <span class="o">$</span> <span class="n">intersperse</span> <span class="s">&quot; &quot;</span>
+            <span class="p">[</span> <span class="s">&quot;xrandr&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output HDMI1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--mode 1920x1080&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--pos 0x0&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--rotate normal&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output LVDS1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--off&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output VIRTUAL1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--off &quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output DP1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--off &quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--output VGA1&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--mode 1920x1080&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--pos 1920x0&quot;</span>
+            <span class="p">,</span> <span class="s">&quot;--rotate normal&quot;</span>
+            <span class="p">]</span>
 
-<p>First we need create a ruby file under <code>_plugins</code> with the following content.
-The name of the file does not matter as long as it suffixes with <code>rb</code> it will be loaded on Jekyll start up.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">module Jekyll
-
-  module ArchiveIndexFilter
-    def to_archive(input, format) 
-        # posts will be grouped by specified format (eg. month-year)
-        input.group_by{ |a| a.date.strftime(format) }
-    end
-  end
-
-end
-
-Liquid::Template.register_filter(Jekyll::ArchiveIndexFilter)
-</code></pre></div>
-<p>Now we can use the filter we just created. If you like the archive index bar in this site, here is the HTML snippet:</p>
-
-<p>Hint: <strong><em>Jekyll needs a restart to load the Ruby code</em></strong></p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">&lt;div class=&quot;panel panel-default&quot;&gt;
-    &lt;div class=&quot;panel-heading&quot;&gt;Archive&lt;/div&gt;
-    &lt;div class=&quot;panel-body&quot;&gt;
-        {% assign archive = site.posts | to_archive:&#39;%b %Y&#39; %}
-
-        &lt;ul class=&quot;nav&quot;&gt;
-            {% for archive_entry in archive %}
-            &lt;li class=&quot;archive-entry&quot;&gt;
-                &lt;a href=&quot;javascript:void(0)&quot;&gt;{{ archive_entry[0] }} &lt;span class=&quot;badge pull-right&quot;&gt;{{ archive_entry[1] | size }}&lt;/span&gt;&lt;/a&gt;
-                &lt;ul&gt;
-                    {% for post in archive_entry[1] %}
-                    &lt;li&gt;&lt;a href=&quot;{{ post.url }}&quot;&gt;{{ post.title }}&lt;/a&gt;&lt;/li&gt;
-                    {% endfor %}
-                &lt;/ul&gt;
-            &lt;/li&gt;
-            {% endfor %}
-        &lt;/ul&gt;
-    &lt;/div&gt;
-&lt;/div&gt;
+<span class="c1">-- count physical monitors by count how my lines of &quot;connected&quot; in xrandr standard output</span>
+<span class="nf">countMonitors</span> <span class="ow">=</span> <span class="kr">do</span>
+    <span class="p">(</span><span class="kr">_</span><span class="p">,</span> <span class="kt">Just</span> <span class="n">hout</span><span class="p">,</span> <span class="kr">_</span><span class="p">,</span> <span class="kr">_</span><span class="p">)</span> <span class="ow">&lt;-</span>
+        <span class="n">createProcess</span> <span class="p">(</span><span class="n">proc</span> <span class="s">&quot;xrandr&quot;</span> <span class="p">[</span><span class="s">&quot;-q&quot;</span><span class="p">])</span> 
+            <span class="p">{</span> <span class="n">env</span> <span class="ow">=</span> <span class="kt">Just</span> <span class="p">[(</span><span class="s">&quot;DISPLAY&quot;</span><span class="p">,</span> <span class="s">&quot;:0&quot;</span><span class="p">)]</span>
+            <span class="p">,</span> <span class="n">std_out</span> <span class="ow">=</span> <span class="kt">CreatePipe</span> <span class="p">}</span>
+    <span class="n">length</span> <span class="o">.</span> <span class="n">filter</span> <span class="p">(</span><span class="n">isInfixOf</span> <span class="s">&quot; connected&quot;</span><span class="p">)</span> <span class="o">.</span> <span class="n">lines</span> <span class="o">&lt;$&gt;</span> <span class="n">hGetContents</span> <span class="n">hout</span>
 </code></pre></div>
     </article>
 </div>
