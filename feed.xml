@@ -6,9 +6,87 @@
 </description>
     <link>http://yourdomain.com/</link>
     <atom:link href="http://yourdomain.com/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 09 Sep 2015 21:26:50 +0930</pubDate>
-    <lastBuildDate>Wed, 09 Sep 2015 21:26:50 +0930</lastBuildDate>
+    <pubDate>Fri, 25 Sep 2015 21:35:22 +0930</pubDate>
+    <lastBuildDate>Fri, 25 Sep 2015 21:35:22 +0930</lastBuildDate>
     <generator>Jekyll v2.5.3</generator>
+    
+      <item>
+        <title>Longest Common Subsequence</title>
+        <description>&lt;p&gt;Implementing longest common subsequence (LCS) in Haskell according to its mathematical definition is very simple.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;lcs [] []               = []
+lcs _  []               = []
+lcs [] _                = []
+lcs aa@(a:as) bb@(b:bs) =
+    if a == b
+        then a : lcs as bs
+        else 
+            let p1 = lcs aa bs
+                p2 = lcs as bb
+            in
+                if length p1 &amp;gt; length p2
+                    then p1
+                    else p2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;But the performance of this recursive algorithm is absolutely horrible.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;*Main&amp;gt; lcs &amp;quot;star wars the clone&amp;quot; &amp;quot;star.wars.the.clone&amp;quot;
+&amp;quot;starwarstheclone&amp;quot;
+(15.17 secs, 5,888,228,928 bytes)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;To improve the performance we have to record our temporary results in a matrix.
+Therefore we don&amp;#39;t have to waste time on those results that we have already calculated.&lt;/p&gt;
+
+&lt;p&gt;In comparison phrase the matrix is presented as a mutable 2 dimension array as copying array is a pretty expensive operation.
+Once we finished the calculation we copied it into a immutable array, therefore we can use it in pure code.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;import Data.Array
+import Data.Array.IO
+
+lcs lhs rhs = do
+    let la = length lhs
+        lb = length rhs
+        as = array (1, la) $ zip [1..] lhs
+        bs = array (1, lb) $ zip [1..] rhs
+    cs &amp;lt;- newArray ((0, 0), (la, lb)) 0 :: IO (IOArray (Int, Int) Int)
+    forM_ [1 .. la] $ \x -&amp;gt; do
+        forM_ [1 .. lb] $ \y -&amp;gt; do
+            let a = as ! x
+                b = bs ! y
+            if a == b
+                then do
+                    t &amp;lt;- readArray cs (x - 1, y -1)
+                    writeArray cs (x, y) (t + 1)
+                else do
+                    t1 &amp;lt;- readArray cs (x, y - 1)
+                    t2 &amp;lt;- readArray cs (x - 1, y)
+                    writeArray cs (x, y) $ max t1 t2
+    rlt &amp;lt;- freeze cs :: IO (Array (Int, Int) Int)
+    return $ backtrace rlt as bs la lb
+
+backtrace cs as bs i j
+    | i == 0 || j == 0 = &amp;quot;&amp;quot;
+    | otherwise        =
+        let i&amp;#39; = i - 1 :: Int
+            j&amp;#39; = j - 1 :: Int
+            ca = as ! i
+            cb = bs ! j
+        in if ca == cb
+                then backtrace cs as bs i&amp;#39; j&amp;#39; ++ [ca]
+                else if  cs ! (i, j&amp;#39;) &amp;gt; cs ! (i&amp;#39;, j)
+                        then backtrace cs as bs i j&amp;#39;
+                        else backtrace cs as bs i&amp;#39; j
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Although the code is longer but it is 1571 times faster than the recursive one.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;*Main&amp;gt; lcs &amp;quot;star war the clone&amp;quot; &amp;quot;star.war.the.clone&amp;quot;
+&amp;quot;starwartheclone&amp;quot;
+(0.01 secs, 0 bytes)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description>
+        <pubDate>Sat, 26 Sep 2015 04:35:50 +0930</pubDate>
+        <link>http://yourdomain.com/haskell/2015/09/26/Fuzzy-Move.html</link>
+        <guid isPermaLink="true">http://yourdomain.com/haskell/2015/09/26/Fuzzy-Move.html</guid>
+        
+        
+        <category>haskell</category>
+        
+      </item>
     
       <item>
         <title>Gulp Proxy Setup</title>

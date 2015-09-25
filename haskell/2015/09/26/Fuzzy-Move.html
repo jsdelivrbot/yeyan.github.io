@@ -6,11 +6,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Generate a Jekyll Archive Index</title>
-    <meta name="description" content="Jekyll does not provide archive function out of the box.There are some solution solve this problem by creating a separate archive page,but I really like a ar...">
+    <title>Longest Common Subsequence</title>
+    <meta name="description" content="Implementing longest common subsequence (LCS) in Haskell according to its mathematical definition is very simple.">
 
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="canonical" href="http://yourdomain.com/jekyll/2015/08/31/Jekyll-Archive.html">
+    <link rel="canonical" href="http://yourdomain.com/haskell/2015/09/26/Fuzzy-Move.html">
     <link rel="alternate" type="application/rss+xml" title="Ye's Programming Café" href="http://yourdomain.com/feed.xml" />
 
     <script src="/js/vendor.js"></script>
@@ -60,55 +60,77 @@
             <div class="site-content col-md-9">
                 <div>
     <header class="page-header">
-        <h1 class="post-title">Generate a Jekyll Archive Index</h1>
+        <h1 class="post-title">Longest Common Subsequence</h1>
     </header>
-    <p class="text-muted">Aug 31, 2015</p>
+    <p class="text-muted">Sep 26, 2015</p>
 
     <article>
-        <p>Jekyll does not provide archive function out of the box.
-There are some solution solve this problem by creating a separate archive page,
-but I really like a archive side bar on the index page (like the one on this site).</p>
-
-<p>After spend some time on Jekyll&#39;s documentation. 
-I found this is actually pretty easy to achieve by implementing a custom plugin. </p>
-
-<p>First we need create a ruby file under <code>_plugins</code> with the following content.
-The name of the file does not matter as long as it suffixes with <code>rb</code> it will be loaded on Jekyll start up.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">module Jekyll
-
-  module ArchiveIndexFilter
-    def to_archive(input, format) 
-        # posts will be grouped by specified format (eg. month-year)
-        input.group_by{ |a| a.date.strftime(format) }
-    end
-  end
-
-end
-
-Liquid::Template.register_filter(Jekyll::ArchiveIndexFilter)
+        <p>Implementing longest common subsequence (LCS) in Haskell according to its mathematical definition is very simple.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">lcs [] []               = []
+lcs _  []               = []
+lcs [] _                = []
+lcs aa@(a:as) bb@(b:bs) =
+    if a == b
+        then a : lcs as bs
+        else 
+            let p1 = lcs aa bs
+                p2 = lcs as bb
+            in
+                if length p1 &gt; length p2
+                    then p1
+                    else p2
 </code></pre></div>
-<p>Now we can use the filter we just created. If you like the archive index bar in this site, here is the HTML snippet:</p>
+<p>But the performance of this recursive algorithm is absolutely horrible.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">*Main&gt; lcs &quot;star wars the clone&quot; &quot;star.wars.the.clone&quot;
+&quot;starwarstheclone&quot;
+(15.17 secs, 5,888,228,928 bytes)
+</code></pre></div>
+<p>To improve the performance we have to record our temporary results in a matrix.
+Therefore we don&#39;t have to waste time on those results that we have already calculated.</p>
 
-<p>Hint: <strong><em>Jekyll needs a restart to load the Ruby code</em></strong></p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">&lt;div class=&quot;panel panel-default&quot;&gt;
-    &lt;div class=&quot;panel-heading&quot;&gt;Archive&lt;/div&gt;
-    &lt;div class=&quot;panel-body&quot;&gt;
-        {% assign archive = site.posts | to_archive:&#39;%b %Y&#39; %}
+<p>In comparison phrase the matrix is presented as a mutable 2 dimension array as copying array is a pretty expensive operation.
+Once we finished the calculation we copied it into a immutable array, therefore we can use it in pure code.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">import Data.Array
+import Data.Array.IO
 
-        &lt;ul class=&quot;nav&quot;&gt;
-            {% for archive_entry in archive %}
-            &lt;li class=&quot;archive-entry&quot;&gt;
-                &lt;a href=&quot;javascript:void(0)&quot;&gt;{{ archive_entry[0] }} &lt;span class=&quot;badge pull-right&quot;&gt;{{ archive_entry[1] | size }}&lt;/span&gt;&lt;/a&gt;
-                &lt;ul&gt;
-                    {% for post in archive_entry[1] %}
-                    &lt;li&gt;&lt;a href=&quot;{{ post.url }}&quot;&gt;{{ post.title }}&lt;/a&gt;&lt;/li&gt;
-                    {% endfor %}
-                &lt;/ul&gt;
-            &lt;/li&gt;
-            {% endfor %}
-        &lt;/ul&gt;
-    &lt;/div&gt;
-&lt;/div&gt;
+lcs lhs rhs = do
+    let la = length lhs
+        lb = length rhs
+        as = array (1, la) $ zip [1..] lhs
+        bs = array (1, lb) $ zip [1..] rhs
+    cs &lt;- newArray ((0, 0), (la, lb)) 0 :: IO (IOArray (Int, Int) Int)
+    forM_ [1 .. la] $ \x -&gt; do
+        forM_ [1 .. lb] $ \y -&gt; do
+            let a = as ! x
+                b = bs ! y
+            if a == b
+                then do
+                    t &lt;- readArray cs (x - 1, y -1)
+                    writeArray cs (x, y) (t + 1)
+                else do
+                    t1 &lt;- readArray cs (x, y - 1)
+                    t2 &lt;- readArray cs (x - 1, y)
+                    writeArray cs (x, y) $ max t1 t2
+    rlt &lt;- freeze cs :: IO (Array (Int, Int) Int)
+    return $ backtrace rlt as bs la lb
+
+backtrace cs as bs i j
+    | i == 0 || j == 0 = &quot;&quot;
+    | otherwise        =
+        let i&#39; = i - 1 :: Int
+            j&#39; = j - 1 :: Int
+            ca = as ! i
+            cb = bs ! j
+        in if ca == cb
+                then backtrace cs as bs i&#39; j&#39; ++ [ca]
+                else if  cs ! (i, j&#39;) &gt; cs ! (i&#39;, j)
+                        then backtrace cs as bs i j&#39;
+                        else backtrace cs as bs i&#39; j
+</code></pre></div>
+<p>Although the code is longer but it is 1571 times faster than the recursive one.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">*Main&gt; lcs &quot;star war the clone&quot; &quot;star.war.the.clone&quot;
+&quot;starwartheclone&quot;
+(0.01 secs, 0 bytes)
 </code></pre></div>
     </article>
 </div>
